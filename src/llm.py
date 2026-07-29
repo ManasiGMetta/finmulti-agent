@@ -7,14 +7,14 @@ stay mock-first data tools (see src/tools/) — this file is specifically
 for the nodes where an LLM's judgment is the actual point.
 
 Two implementations:
-  - get_real_llm()  -> ChatAnthropic, requires ANTHROPIC_API_KEY
+  - get_real_llm()  -> ChatGroq, requires GROQ_API_KEY (free tier)
   - FakeLLM         -> canned, deterministic responses for tests/CI,
                        so the test suite runs with zero API key and
                        zero network calls.
 
-get_llm() picks the real client if ANTHROPIC_API_KEY is set, else
-warns and falls back to FakeLLM. This mirrors finagent's mock-first
-pattern, but for LLM calls instead of data tools.
+get_llm() picks the real client if GROQ_API_KEY is set, else warns and
+falls back to FakeLLM. This mirrors finagent's mock-first pattern, but
+for LLM calls instead of data tools.
 """
 
 from __future__ import annotations
@@ -86,33 +86,33 @@ class _FakeResponse:
         self.content = content
 
 
-def get_real_llm(model: str = "claude-sonnet-4-6", temperature: float = 0.3):
+def get_real_llm(model: str = "llama-3.3-70b-versatile", temperature: float = 0.3):
     """
-    Build a real ChatAnthropic client. Requires ANTHROPIC_API_KEY to be
-    set in the environment. Raises if the key is missing so callers can
-    fall back cleanly.
+    Build a real ChatGroq client. Requires GROQ_API_KEY to be set in the
+    environment (free tier: https://console.groq.com/keys). Raises if the
+    key is missing so callers can fall back cleanly.
     """
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        raise RuntimeError("ANTHROPIC_API_KEY not set.")
+    if not os.environ.get("GROQ_API_KEY"):
+        raise RuntimeError("GROQ_API_KEY not set.")
 
-    from langchain_anthropic import ChatAnthropic
+    from langchain_groq import ChatGroq
 
-    return ChatAnthropic(model=model, temperature=temperature)
+    return ChatGroq(model=model, temperature=temperature, api_key=os.environ["GROQ_API_KEY"])
 
 
 def get_llm():
     """
-    Return a real LLM if ANTHROPIC_API_KEY is set, else fall back to
-    FakeLLM with a warning. This is the single call site every node
-    should use — keeps the real/fake decision in one place.
+    Return a real LLM if GROQ_API_KEY is set, else fall back to FakeLLM
+    with a warning. This is the single call site every node should use —
+    keeps the real/fake decision in one place.
     """
     try:
         return get_real_llm()
     except RuntimeError:
         warnings.warn(
-            "ANTHROPIC_API_KEY not set — using FakeLLM. Routing, debate, "
+            "GROQ_API_KEY not set — using FakeLLM. Routing, debate, "
             "and synthesis will use canned responses, not real reasoning. "
-            "Set ANTHROPIC_API_KEY to run this agent for real.",
+            "Set GROQ_API_KEY (free tier) to run this agent for real.",
             stacklevel=2,
         )
         return FakeLLM()
