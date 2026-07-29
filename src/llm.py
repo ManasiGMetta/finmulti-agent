@@ -97,7 +97,7 @@ def get_real_llm(model: str = "claude-sonnet-4-6", temperature: float = 0.3):
 
     from langchain_anthropic import ChatAnthropic
 
-    return ChatAnthropic(model=model, temperature=temperature)
+    return ChatGoogleGenerativeAI(model=model, temperature=temperature)
 
 
 def get_llm():
