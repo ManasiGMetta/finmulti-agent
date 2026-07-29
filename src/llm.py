@@ -95,7 +95,7 @@ def get_real_llm(model: str = "claude-sonnet-4-6", temperature: float = 0.3):
     if not os.environ.get("ANTHROPIC_API_KEY"):
         raise RuntimeError("ANTHROPIC_API_KEY not set.")
 
-    from langchain_anthropic import ChatAnthropic
+    from langchain_anthropic import ChatGoogleGenerativeAI
 
     return ChatGoogleGenerativeAI(model=model, temperature=temperature)
 
